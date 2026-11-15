@@ -8,23 +8,57 @@ public class Ship {
 	private boolean[] hits;
 	
 	public Ship(int len, String na, int row, int col, boolean rot) {
-		int lenght = len;
-		String name = na;
-		int posRow = row;
-		int posCol = col;
-		boolean isHoriz = rot;
-		boolean[] hits = new boolean[len];
+		length = len;
+		name = na;
+		posRow = row;
+		posCol = col;
+		isHoriz = rot;
+		hits = new boolean[len];
 	}
 	
 	public int getRow() {
-		
+		return posRow;
 	}
 	
 	public int getCol() {
-		
+		return posCol;
+	}
+	
+	public int getLength() {
+		return length;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public boolean isHorizontal() {
+		return isHoriz;
+	}
+	
+	public void hit(int index) {
+		if (index >= 0 && index < hits.length) {
+			hits[index] = true;
+		}
+	}
+	
+	public boolean isHit(int index) {
+		if (index >= 0 && index < hits.length) {
+			return hits[index];
+		}
+		return false;
+	}
+	
+	public boolean isSunk() {
+		for (int i = 0; i < hits.length; i++) {
+			if (!hits[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public String toString() {
-		return ("Name: " + name);
+		return "Name: " + name;
 	}
 }
