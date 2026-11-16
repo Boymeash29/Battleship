@@ -17,21 +17,16 @@ public class Battleship {
 
     private void placeShips() {
         Board playerBoard = gameBoard.getPlayerBoard();
-        Ship carrier = promptForShip("Carrier", 5);
-        Ship battleship = promptForShip("Battleship", 4);
-        Ship cruiser = promptForShip("Cruiser", 3);
-        Ship submarine = promptForShip("Submarine", 3);
-        Ship destroyer = promptForShip("Destroyer", 2);
-
-        playerBoard.placeShip(carrier);
-        playerBoard.placeShip(battleship);
-        playerBoard.placeShip(cruiser);
-        playerBoard.placeShip(submarine);
-        playerBoard.placeShip(destroyer);
+        promptForShip(playerBoard, "Carrier", 5);
+        promptForShip(playerBoard, "Battleship", 4);
+        promptForShip(playerBoard, "Cruiser", 3);
+        promptForShip(playerBoard, "Submarine", 3);
+        promptForShip(playerBoard, "Destroyer", 2);
         playerBoard.printBoard();
     }
 
-    private Ship promptForShip(String name, int length) {
+    private void promptForShip(Board board, String name, int length) {
+        int really = 0;
         while (true) {
             System.out.println("Place your " + name + " (length " + length + ").");
             System.out.print("Starting row (0-9): ");
@@ -41,16 +36,26 @@ public class Battleship {
             System.out.print("Orientation (H/V): ");
             String orientation = scanner.next().toUpperCase();
 
-            boolean horizontal = orientation.equals("H");
-            boolean vertical = orientation.equals("V");
-            // Check if the ship fits within the board boundaries *this took almost an hour lol (did ask for help from dad)
-            boolean fits = row >= 0 && row < Board.SIZE && col >= 0 && col < Board.SIZE && ((horizontal && col + length <= Board.SIZE) || (vertical && row + length <= Board.SIZE));
-
-            if (fits) {
-                return new Ship(length, name, row, col, horizontal);
+            if (!orientation.equals("H") && !orientation.equals("V")) {
+                really++;
+                if (really == 1) {
+                    System.out.println("That is not H or V");
+                } else if (really == 2) {
+                    System.out.println("Really? Please enter H or V");
+                } else {
+                    System.out.println("That's it, you are not allowed to play this game anymore");
+                    System.exit(0);
+                }
+                continue;
             }
 
-            System.out.println("Out of bounds, try again");
+            really = 0;
+            boolean horizontal = orientation.equals("H");
+            Ship ship = new Ship(length, name, row, col, horizontal);
+            if (board.placeShip(ship)) {
+                return;
+            }
+            System.out.println("no");
         }
     }
 
