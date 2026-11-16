@@ -9,7 +9,7 @@ public class Board {
 		grid = new String[SIZE][SIZE];
 		for (int row = 0; row < SIZE; row++) {
 			for (int col = 0; col < SIZE; col++) {
-				grid[row][col] = "w"; // w = water
+				grid[row][col] = "-"; // w = water
 			}
 		}
 	}
@@ -32,7 +32,7 @@ public class Board {
 	}
 	
 	public String fireAt(int row, int col) {
-		if (grid[row][col].equals("w")) {
+		if (grid[row][col].equals("-")) {
 			grid[row][col] = "O";
 			return "miss";
 		}

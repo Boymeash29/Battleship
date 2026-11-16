@@ -43,8 +43,8 @@ public class Ship {
 	}
 	
 	public boolean isHit(int index) {
-		if (index >= 0 && index < hits.length) {
-			return hits[index];
+		if (index >= 0 && index < hits.length) { // Check if the index is valid
+			return hits[index]; // Return status
 		}
 		return false;
 	}
