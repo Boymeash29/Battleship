@@ -35,6 +35,25 @@ public class Ship {
 	public boolean isHorizontal() {
 		return isHoriz;
 	}
+
+	public boolean isAt(int row, int col) {
+		if (isHoriz) {
+			return row == posRow && col >= posCol && col < posCol + length;
+		}
+		return col == posCol && row >= posRow && row < posRow + length;
+	}
+
+	public void hitAt(int row, int col) {
+		if (isAt(row, col)) {
+			int index;
+			if (isHoriz) {
+				index = col - posCol;
+			} else {
+				index = row - posRow;
+			}
+			hit(index);
+		}
+	}
 	
 	public void hit(int index) {
 		if (index >= 0 && index < hits.length) {

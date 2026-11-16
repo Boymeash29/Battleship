@@ -2,73 +2,132 @@ import java.util.Scanner;
 
 public class Battleship {
 
-    private GameBoard gameBoard;
+    private GameBoard[] players;
     private Scanner scanner;
+    private String[] shipNames = {"Carrier", "Battleship", "Cruiser", "Submarine", "Destroyer"};
+    private int[] shipLengths = {5, 4, 3, 3, 2};
 
     public Battleship() {
-        gameBoard = new GameBoard();
         scanner = new Scanner(System.in);
+        players = new GameBoard[2];
+        players[0] = new GameBoard();
+        players[1] = new GameBoard();
         startGame();
     }
 
     private void startGame() {
-        placeShips();
-    }
+        System.out.println("battleship.");
+        placeFleet(0);
+        passScreen(2);
+        placeFleet(1);
 
-    private void placeShips() {
-        Board playerBoard = gameBoard.getPlayerBoard();
-        promptForShip(playerBoard, "Carrier", 5);
-        promptForShip(playerBoard, "Battleship", 4);
-        promptForShip(playerBoard, "Cruiser", 3);
-        promptForShip(playerBoard, "Submarine", 3);
-        promptForShip(playerBoard, "Destroyer", 2);
-        playerBoard.printBoard();
-    }
-
-    private void promptForShip(Board board, String name, int length) {
-        int really = 0;
-        while (true) {
-            System.out.println("Place your " + name + " (length " + length + ").");
-            System.out.print("Starting row (0-9): ");
-            int row = scanner.nextInt();
-            System.out.print("Starting column (0-9): ");
-            int col = scanner.nextInt();
-            System.out.print("Orientation (H/V): ");
-            String orientation = scanner.next().toUpperCase();
-
-            if (!orientation.equals("H") && !orientation.equals("V")) {
-                really++;
-                if (really == 1) {
-                    System.out.println("That is not H or V");
-                } else if (really == 2) {
-                    System.out.println("Really? Please enter H or V");
-                } else {
-                    System.out.println("That's it, you are not allowed to play this game anymore");
-                    System.exit(0);
-                }
-                continue;
+        int currentPlayer = 0;
+        boolean gameOver = false;
+        while (!gameOver) {
+            passScreen(currentPlayer + 1);
+            gameOver = takeTurn(currentPlayer);
+            if (!gameOver) {
+                currentPlayer = 1 - currentPlayer;
             }
-
-            really = 0;
-            boolean horizontal = orientation.equals("H");
-            Ship ship = new Ship(length, name, row, col, horizontal);
-            if (board.placeShip(ship)) {
-                return;
-            }
-            System.out.println("no");
         }
     }
 
-    private void takeTurn() {
-        // TODO: add logic for taking a turn in the game
+    private void placeFleet(int playerNum) {
+        Board board = players[playerNum].getPlayerBoard();
+        System.out.println("player " + (playerNum + 1) + ": place ships.");
+
+        for (int i = 0; i < shipNames.length; i++) {
+            boolean placed = false;
+            while (!placed) {
+                System.out.println("place " + shipNames[i] + " (" + shipLengths[i] + ").");
+                int row = readCoord("row (0-9): ");
+                int col = readCoord("column (0-9): ");
+                String orientation = readOrient();
+                boolean horiz = orientation.equals("H");
+                Ship ship = new Ship(shipLengths[i], shipNames[i], row, col, horiz);
+
+                placed = board.placeShip(ship);
+                if (!placed) {
+                    System.out.println("nope. doesn't fit. try again.");
+                }
+            }
+
+            System.out.println("your board:");
+            board.printBoard();
+        }
     }
 
-    private void checkForWinner() {
-        // TODO: add logic to check if there is a winner
+    private int readCoord(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            if (scanner.hasNextInt()) {
+                int coord = scanner.nextInt();
+                scanner.nextLine();
+                if (coord >= 0 && coord < Board.SIZE) {
+                    return coord;
+                }
+            } else {
+                scanner.nextLine();
+            }
+            System.out.println("number from 0 to " + (Board.SIZE - 1) + ", please.");
+        }
     }
 
-    private void endGame() {
-        // TODO: add logic to end the game
+    private String readOrient() {
+        while (true) {
+            System.out.print("h or v: ");
+            String orientation = scanner.nextLine().trim().toUpperCase();
+            if (orientation.equals("H") || orientation.equals("V")) {
+                return orientation;
+            }
+            System.out.println("h or v. try again.");
+        }
     }
-	
+
+    private boolean takeTurn(int playerNum) {
+        GameBoard current = players[playerNum];
+        GameBoard other = players[1 - playerNum];
+
+        while (true) {
+            System.out.println("player " + (playerNum + 1) + ", go.");
+            System.out.println("your shots:");
+            current.getTrackerBoard().printBoard();
+            System.out.println("your ships:");
+            current.getPlayerBoard().printBoard();
+
+            int row = readCoord("target row (0-9): ");
+            int col = readCoord("target column (0-9): ");
+            String result = other.getPlayerBoard().fireAt(row, col);
+
+            if (result.equals("already")) {
+                System.out.println("already shot there. pick another.");
+                continue;
+            }
+
+            boolean hit = !result.equals("miss");
+            current.getTrackerBoard().recordShot(row, col, hit);
+            if (result.equals("miss")) {
+                System.out.println("miss.");
+            } else if (result.equals("sunk")) {
+                System.out.println("sank one.");
+            } else {
+                System.out.println("hit.");
+            }
+
+            if (other.getPlayerBoard().fleetSunk()) {
+                System.out.println("player " + (playerNum + 1) + " wins. gg.");
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private void passScreen(int playerNum) {
+        System.out.println("player " + playerNum + ", you're up.");
+        System.out.println("other player, look away. press enter.");
+        scanner.nextLine();
+        for (int i = 0; i < 30; i++) {
+            System.out.println();
+        }
+    }
 }
